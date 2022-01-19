@@ -12,7 +12,19 @@ import {
   getCreditsByOneMember,
   deleteCredit,
   addCredit,
+  getAllCreditsByDate,
+  getAllCreditsByDateAndId,
 } from "../controllers/credits";
+
+import {
+  addDeduction,
+  editDeduction,
+  getAllDeductions,
+  getDeductionsByLoanId,
+  getAllDeductionsByDate,
+  getAllDeductionsByDateAndId,
+  deleteDeduction,
+} from "../controllers/loan_deduc";
 
 const router = express.Router();
 
@@ -34,9 +46,27 @@ router.get("/credits", getAllCredits);
 
 router.get("/credits-by-one-member/:id", getCreditsByOneMember);
 
+router.get("/credits-bydate", getAllCreditsByDate);
+
+router.get("/credits-bydatenid", getAllCreditsByDateAndId);
+
 router.delete("/delete-credit/:id", deleteCredit);
 
 router.post("/add-credit", addCredit);
 
+//loan deduction
+router.get("/loan-deduc", getAllDeductions);
+
+router.get("/loan-loanid", getDeductionsByLoanId);
+
+router.get("/loan-deduc-bydate", getAllDeductionsByDate);
+
+router.get("/loan-deduc-bydatenid", getAllDeductionsByDateAndId);
+
+router.post("/add-loan-deduction", addDeduction);
+
+router.put("/edit-deduction/:id", editDeduction);
+
+router.delete("/delete-deduction/:id", deleteDeduction);
 
 export default router;

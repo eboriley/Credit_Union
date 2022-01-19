@@ -1,11 +1,17 @@
 import { mysqlConnection } from "../config/mysqlConn";
-import { Request, Response, NextFunction, request } from "express";
+import { Request, Response, NextFunction } from "express";
 
 type Credit = {
   amount: number;
   timestamp: any;
   description: string;
   staffID: string;
+};
+
+type DateInfo = {
+  staffID: string;
+  from: string;
+  to: string;
 };
 
 export const getAllCredits = async (
@@ -39,6 +45,42 @@ export const getCreditsByOneMember = async (
     if (!err) return res.send(result);
     if (err) return console.error(err);
   });
+};
+
+export const getAllCreditsByDate = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const date: DateInfo = req.body;
+  const sql: string = `SELECT * FROM credits WHERE timestamp BETWEEN 
+  ? AND ?`;
+  mysqlConnection.query(sql, [date.from, date.to], (err, result): unknown => {
+    if (!err) return res.send(result);
+    if (err)
+      return res.send(
+        "Unable to retrieve all credit at the moment" + err.message
+      );
+  });
+};
+
+export const getAllCreditsByDateAndId = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const date: DateInfo = req.body;
+  const sql: string = `SELECT * FROM credits WHERE staff_id = ? AND timestamp BETWEEN 
+  ? AND ?`;
+  mysqlConnection.query(
+    sql,
+    [date.staffID, date.from, date.to],
+    (err, result): unknown => {
+      if (!err) return res.send(result);
+      if (err)
+        return res.send(
+          "Unable to retrieve all credit at the moment" + err.message
+        );
+    }
+  );
 };
 
 export const deleteCredit = async (
