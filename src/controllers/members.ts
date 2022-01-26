@@ -2,18 +2,18 @@ import { mysqlConnection } from "../config/mysqlConn";
 import { Request, Response, NextFunction } from "express";
 
 type Member = {
-  staffID: string;
-  fName: string;
+  staff_id: string;
+  f_name: string;
   surname: string;
-  otherName?: string;
+  other_name?: string;
   photo?: string;
   dob: string;
   gender: string;
-  phone1: string;
-  phone2?: string;
+  phone_1: string;
+  phone_2?: string;
   email?: string;
-  nextOfKin: string;
-  nextOfKinPhone: string;
+  next_of_kin: string;
+  next_of_kin_phone: string;
   relationship: string;
   archived: string;
   status: string;
@@ -22,7 +22,7 @@ type Member = {
 export const addMember = async (req: Request, res: Response): Promise<void> => {
   let member: Member = req.body;
   const duplicateSql: string = `SELECT * FROM members WHERE staff_id = ?`;
-  mysqlConnection.query(duplicateSql, [member.staffID], (err, result) => {
+  mysqlConnection.query(duplicateSql, [member.staff_id], (err, result) => {
     if (!err) {
       if (result.length > 0) {
         res.send("Member already exists");
@@ -34,25 +34,25 @@ export const addMember = async (req: Request, res: Response): Promise<void> => {
         mysqlConnection.query(
           sql,
           [
-            member.staffID,
-            member.fName,
+            member.staff_id,
+            member.f_name,
             member.surname,
-            member.otherName,
+            member.other_name,
             member.photo,
             member.dob,
             member.gender,
-            member.phone1,
-            member.phone2,
+            member.phone_1,
+            member.phone_2,
             member.email,
-            member.nextOfKin,
-            member.nextOfKinPhone,
+            member.next_of_kin,
+            member.next_of_kin_phone,
             member.relationship,
             member.archived,
             member.status,
           ],
           (err, result) => {
-            if (!err) res.send("Member information added successfully");
-            if (err) res.send("Could not add member information" + err.message);
+            if (!err) res.json("Member information added successfully");
+            if (err) res.json("Could not add member information" + err.message);
           }
         );
       }
@@ -67,7 +67,18 @@ export const viewMembers = async (
 ): Promise<void> => {
   const sql: string = `SELECT * FROM members WHERE status = "active"`;
   mysqlConnection.query(sql, (err, rows): unknown => {
-    if (!err) return res.send(rows);
+    if (!err) return res.json(rows);
+    if (err) return console.error(err);
+  });
+};
+
+export const viewMemberById = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const sql: string = `SELECT * FROM members WHERE staff_id = ? AND status = "active"`;
+  mysqlConnection.query(sql, [req.params.id], (err, rows): unknown => {
+    if (!err) return res.json(rows);
     if (err) return console.error(err);
   });
 };
@@ -78,7 +89,7 @@ export const viewArchivedMembers = async (
 ): Promise<void> => {
   const sql: string = `SELECT * FROM members WHERE archived = "true"`;
   mysqlConnection.query(sql, (err, rows): unknown => {
-    if (!err) return res.send(rows);
+    if (!err) return res.json(rows);
     if (err) return console.error(err);
   });
 };
@@ -94,24 +105,24 @@ export const updateMember = async (
   mysqlConnection.query(
     sql,
     [
-      member.fName,
+      member.f_name,
       member.surname,
-      member.otherName,
+      member.other_name,
       member.photo,
       member.dob,
       member.gender,
-      member.phone1,
-      member.phone2,
+      member.phone_1,
+      member.phone_2,
       member.email,
-      member.nextOfKin,
-      member.nextOfKinPhone,
+      member.next_of_kin,
+      member.next_of_kin_phone,
       member.relationship,
       member.archived,
       member.status,
       req.params.id,
     ],
     (err, result): unknown => {
-      if (!err) return res.send(result);
+      if (!err) return res.json(result);
       if (err) return console.error(err);
     }
   );
@@ -128,7 +139,7 @@ export const removeMember = async (
     sql,
     [member.archived, member.status, req.params.id],
     (err, result): unknown => {
-      if (!err) return res.send("Member succefully removed /n" + result);
+      if (!err) return res.json("Member succefully removed /n" + result);
       if (err) return console.error(err);
     }
   );

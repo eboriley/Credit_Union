@@ -15,7 +15,7 @@ const addDeduction = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     const deduction = req.body;
     const sql = `INSERT INTO loan_deductions (amount, description, timestamp, loan_id)
     VALUES (?,?,CURRENT_TIMESTAMP,?)`;
-    mysqlConn_1.mysqlConnection.query(sql, [deduction.amount, deduction.description, [deduction.loanID]], (err, result) => {
+    mysqlConn_1.mysqlConnection.query(sql, [deduction.amount, deduction.description, [deduction.loan_id]], (err, result) => {
         if (!err)
             return res.send("Credit was successfully added to loan account");
         if (err)
@@ -27,7 +27,7 @@ const editDeduction = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     const deduction = req.body;
     const sql = `UPDATE loan_deductions SET amount = ?, description =?,
     timestamp = CURRENT_TIMESTAMP, loan_id = ? WHERE deduction_id = ?`;
-    mysqlConn_1.mysqlConnection.query(sql, [deduction.amount, deduction.description, deduction.loanID, req.params.id], (err, result) => {
+    mysqlConn_1.mysqlConnection.query(sql, [deduction.amount, deduction.description, deduction.loan_id, req.params.id], (err, result) => {
         if (!err)
             return res.send("Loan credit record successfully updated!");
         if (err)
@@ -61,7 +61,7 @@ const getAllDeductionsByDateAndId = (req, res) => __awaiter(void 0, void 0, void
     const date = req.body;
     const sql = `SELECT * FROM loan_deductions WHERE loan_id = ? AND timestamp BETWEEN 
   ? AND ?`;
-    mysqlConn_1.mysqlConnection.query(sql, [date.loanID, date.from, date.to], (err, result) => {
+    mysqlConn_1.mysqlConnection.query(sql, [date.loan_id, date.from, date.to], (err, result) => {
         if (!err)
             return res.send(result);
         if (err)
@@ -82,7 +82,7 @@ exports.deleteDeduction = deleteDeduction;
 const getDeductionsByLoanId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const sql = `SELECT * FROM loan_deductions where loan_id = ?`;
     const deduction = req.body;
-    mysqlConn_1.mysqlConnection.query(sql, [deduction.loanID], (err, result) => {
+    mysqlConn_1.mysqlConnection.query(sql, [deduction.loan_id], (err, result) => {
         if (!err)
             return res.send(result);
         if (err)

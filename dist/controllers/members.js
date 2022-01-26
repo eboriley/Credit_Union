@@ -9,12 +9,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.removeMember = exports.updateMember = exports.viewArchivedMembers = exports.viewMembers = exports.addMember = void 0;
+exports.removeMember = exports.updateMember = exports.viewArchivedMembers = exports.viewMemberById = exports.viewMembers = exports.addMember = void 0;
 const mysqlConn_1 = require("../config/mysqlConn");
 const addMember = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let member = req.body;
     const duplicateSql = `SELECT * FROM members WHERE staff_id = ?`;
-    mysqlConn_1.mysqlConnection.query(duplicateSql, [member.staffID], (err, result) => {
+    mysqlConn_1.mysqlConnection.query(duplicateSql, [member.staff_id], (err, result) => {
         if (!err) {
             if (result.length > 0) {
                 res.send("Member already exists");
@@ -25,26 +25,26 @@ const addMember = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         VALUES 
         (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
                 mysqlConn_1.mysqlConnection.query(sql, [
-                    member.staffID,
-                    member.fName,
+                    member.staff_id,
+                    member.f_name,
                     member.surname,
-                    member.otherName,
+                    member.other_name,
                     member.photo,
                     member.dob,
                     member.gender,
-                    member.phone1,
-                    member.phone2,
+                    member.phone_1,
+                    member.phone_2,
                     member.email,
-                    member.nextOfKin,
-                    member.nextOfKinPhone,
+                    member.next_of_kin,
+                    member.next_of_kin_phone,
                     member.relationship,
                     member.archived,
                     member.status,
                 ], (err, result) => {
                     if (!err)
-                        res.send("Member information added successfully");
+                        res.json("Member information added successfully");
                     if (err)
-                        res.send("Could not add member information" + err.message);
+                        res.json("Could not add member information" + err.message);
                 });
             }
         }
@@ -57,17 +57,27 @@ const viewMembers = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     const sql = `SELECT * FROM members WHERE status = "active"`;
     mysqlConn_1.mysqlConnection.query(sql, (err, rows) => {
         if (!err)
-            return res.send(rows);
+            return res.json(rows);
         if (err)
             return console.error(err);
     });
 });
 exports.viewMembers = viewMembers;
+const viewMemberById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const sql = `SELECT * FROM members WHERE staff_id = ? AND status = "active"`;
+    mysqlConn_1.mysqlConnection.query(sql, [req.params.id], (err, rows) => {
+        if (!err)
+            return res.json(rows);
+        if (err)
+            return console.error(err);
+    });
+});
+exports.viewMemberById = viewMemberById;
 const viewArchivedMembers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const sql = `SELECT * FROM members WHERE archived = "true"`;
     mysqlConn_1.mysqlConnection.query(sql, (err, rows) => {
         if (!err)
-            return res.send(rows);
+            return res.json(rows);
         if (err)
             return console.error(err);
     });
@@ -79,24 +89,24 @@ const updateMember = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     photo = ?, dob = ?, gender = ?, phone_1 = ?, phone_2 = ?, email = ?, next_of_kin = ?,
     next_of_kin_phone = ?, relationship = ?, archived = ?, status = ? WHERE staff_id = ?`;
     mysqlConn_1.mysqlConnection.query(sql, [
-        member.fName,
+        member.f_name,
         member.surname,
-        member.otherName,
+        member.other_name,
         member.photo,
         member.dob,
         member.gender,
-        member.phone1,
-        member.phone2,
+        member.phone_1,
+        member.phone_2,
         member.email,
-        member.nextOfKin,
-        member.nextOfKinPhone,
+        member.next_of_kin,
+        member.next_of_kin_phone,
         member.relationship,
         member.archived,
         member.status,
         req.params.id,
     ], (err, result) => {
         if (!err)
-            return res.send(result);
+            return res.json(result);
         if (err)
             return console.error(err);
     });
@@ -107,7 +117,7 @@ const removeMember = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     const sql = "UPDATE members SET archived = ?, status = ? WHERE staff_id = ?";
     mysqlConn_1.mysqlConnection.query(sql, [member.archived, member.status, req.params.id], (err, result) => {
         if (!err)
-            return res.send("Member succefully removed /n" + result);
+            return res.json("Member succefully removed /n" + result);
         if (err)
             return console.error(err);
     });

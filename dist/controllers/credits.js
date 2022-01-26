@@ -25,7 +25,7 @@ const addCredit = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let credit = req.body;
     const sql = `INSERT INTO credits (amount, timestamp, description, staff_id)
   VALUES
-  (${credit.amount}, CURRENT_TIMESTAMP, "${credit.description}", "${credit.staffID}")`;
+  (${credit.amount}, CURRENT_TIMESTAMP, "${credit.description}", "${credit.staff_id}")`;
     mysqlConn_1.mysqlConnection.query(sql, (err, result) => {
         if (!err)
             return res.send("Credit records added to member successfully!");
@@ -60,7 +60,7 @@ const getAllCreditsByDateAndId = (req, res) => __awaiter(void 0, void 0, void 0,
     const date = req.body;
     const sql = `SELECT * FROM credits WHERE staff_id = ? AND timestamp BETWEEN 
   ? AND ?`;
-    mysqlConn_1.mysqlConnection.query(sql, [date.staffID, date.from, date.to], (err, result) => {
+    mysqlConn_1.mysqlConnection.query(sql, [date.staff_id, date.from, date.to], (err, result) => {
         if (!err)
             return res.send(result);
         if (err)

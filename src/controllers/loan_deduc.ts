@@ -6,11 +6,11 @@ type Deduction = {
   amount: number;
   description: string;
   timestamp?: any;
-  loanID: string;
+  loan_id: string;
 };
 
 type DateInfo = {
-  loanID: string;
+  loan_id: string;
   from: string;
   to: string;
 };
@@ -24,7 +24,7 @@ export const addDeduction = async (
     VALUES (?,?,CURRENT_TIMESTAMP,?)`;
   mysqlConnection.query(
     sql,
-    [deduction.amount, deduction.description, [deduction.loanID]],
+    [deduction.amount, deduction.description, [deduction.loan_id]],
     (err, result): unknown => {
       if (!err)
         return res.send("Credit was successfully added to loan account");
@@ -43,7 +43,7 @@ export const editDeduction = async (
     timestamp = CURRENT_TIMESTAMP, loan_id = ? WHERE deduction_id = ?`;
   mysqlConnection.query(
     sql,
-    [deduction.amount, deduction.description, deduction.loanID, req.params.id],
+    [deduction.amount, deduction.description, deduction.loan_id, req.params.id],
     (err, result): unknown => {
       if (!err) return res.send("Loan credit record successfully updated!");
       if (err)
@@ -91,7 +91,7 @@ export const getAllDeductionsByDateAndId = async (
   ? AND ?`;
   mysqlConnection.query(
     sql,
-    [date.loanID, date.from, date.to],
+    [date.loan_id, date.from, date.to],
     (err, result): unknown => {
       if (!err) return res.send(result);
       if (err)
@@ -119,7 +119,7 @@ export const getDeductionsByLoanId = async (
 ): Promise<void> => {
   const sql: string = `SELECT * FROM loan_deductions where loan_id = ?`;
   const deduction: Deduction = req.body;
-  mysqlConnection.query(sql, [deduction.loanID], (err, result): unknown => {
+  mysqlConnection.query(sql, [deduction.loan_id], (err, result): unknown => {
     if (!err) return res.send(result);
     if (err)
       return res.send(

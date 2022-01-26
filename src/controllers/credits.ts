@@ -5,11 +5,11 @@ type Credit = {
   amount: number;
   timestamp: any;
   description: string;
-  staffID: string;
+  staff_id: string;
 };
 
 type DateInfo = {
-  staffID: string;
+  staff_id: string;
   from: string;
   to: string;
 };
@@ -29,7 +29,7 @@ export const addCredit = async (req: Request, res: Response): Promise<void> => {
   let credit: Credit = req.body;
   const sql: string = `INSERT INTO credits (amount, timestamp, description, staff_id)
   VALUES
-  (${credit.amount}, CURRENT_TIMESTAMP, "${credit.description}", "${credit.staffID}")`;
+  (${credit.amount}, CURRENT_TIMESTAMP, "${credit.description}", "${credit.staff_id}")`;
   mysqlConnection.query(sql, (err, result): unknown => {
     if (!err) return res.send("Credit records added to member successfully!");
     if (err) return res.send("Could not add credit to member" + err.message);
@@ -72,7 +72,7 @@ export const getAllCreditsByDateAndId = async (
   ? AND ?`;
   mysqlConnection.query(
     sql,
-    [date.staffID, date.from, date.to],
+    [date.staff_id, date.from, date.to],
     (err, result): unknown => {
       if (!err) return res.send(result);
       if (err)

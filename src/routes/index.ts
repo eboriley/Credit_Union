@@ -2,11 +2,13 @@ import express from 'express'
 import { things } from "../controllers/pages"
 import {
   addMember,
+  viewMemberById,
   viewMembers,
   updateMember,
   removeMember,
   viewArchivedMembers,
 } from "../controllers/members";
+
 import {
   getAllCredits,
   getCreditsByOneMember,
@@ -26,6 +28,8 @@ import {
   deleteDeduction,
 } from "../controllers/loan_deduc";
 
+import { getAllWithdrawals } from "../controllers/partial_withdraw";
+
 const router = express.Router();
 
 router.get("/things", things);
@@ -33,6 +37,8 @@ router.get("/things", things);
 router.get("/members", viewMembers);
 
 router.get("/archived-members", viewArchivedMembers);
+
+router.get("/members/:id", viewMemberById);
 
 router.post("/add-member", addMember);
 
@@ -68,5 +74,9 @@ router.post("/add-loan-deduction", addDeduction);
 router.put("/edit-deduction/:id", editDeduction);
 
 router.delete("/delete-deduction/:id", deleteDeduction);
+
+// partial withdrawal routes
+
+router.get("/partial-withdraw", getAllWithdrawals);
 
 export default router;
