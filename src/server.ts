@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import cors from "cors"
 import router from "./routes/index"
 import { Request, Response, NextFunction } from "express";
+const InvoiceGenerator = require("./InvoiceGenerator");
 const app = express();
 
 app.use(express.json());
@@ -18,11 +19,11 @@ app.use(function (req: Request, res: Response, next: NextFunction) {
   next();
 });
 
-app.set('view engine','ejs');
+app.set("view engine", "ejs");
 
-app.use("/",router);
+app.use("/", router);
 
 const port: number = 5000;
-app.listen(port, function():void {
-    console.log("Server listening on http://localhost:"+port);
-})
+app.listen(port, function () {
+  console.log("Server listening on http://localhost:" + port);
+});

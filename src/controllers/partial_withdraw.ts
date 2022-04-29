@@ -14,8 +14,7 @@ export const getAllWithdrawals = async (
 ): Promise<void> => {
   const sql: string = `SELECT * FROM partial_withdrawals`;
   mysqlConnection.query(sql, (err, result) => {
-    if (!err) return res.send(result);
-    if (err)
-      return res.send("Could not retrieve partial withdrawals" + err.message);
+    if (!err) return res.json(result);
+    if (err) return res.json(err);
   });
 };

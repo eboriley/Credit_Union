@@ -9,6 +9,15 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv = __importStar(require("dotenv"));
 dotenv.config({ path: __dirname + "./env" });
+// export const dbConfiguration: dbValidator = {
+//   db_host: "localhost",
+//   db_user: "eboriley_nibs",
+//   db_password: "EqcwaFbytNqWAh9",
+//   db_name: "eboriley_nibs",
+//   // db_port: 3306,
+//   // access_token: "accesstokenkey",
+//   // refresh_token: "refreshtokenkey",
+// };
 exports.dbConfiguration = {
     db_host: "localhost",
     db_user: "root",
@@ -18,12 +27,3 @@ exports.dbConfiguration = {
     access_token: "accesstokenkey",
     refresh_token: "refreshtokenkey",
 };
-// export const dbConfiguration1: dbValidator = {
-//   db_host: "localhost",
-//   db_user: "mamasosda_nibs_demo",
-//   db_password: "O1]aq&FWqtvh",
-//   db_name: "mamasosda_nibs_demo",
-//   db_port: 3306,
-//   access_token: "accesstokenkey",
-//   refresh_token: "refreshtokenkey",
-// };

@@ -1,12 +1,16 @@
 import express from 'express'
-import { things } from "../controllers/pages"
+const PDFGenerator = require("pdfkit");
+import { things } from "../controllers/pages";
 import {
   addMember,
   viewMemberById,
   viewMembers,
   updateMember,
   removeMember,
+  archiveMember,
   viewArchivedMembers,
+  viewMembersByTerm,
+  login,
 } from "../controllers/members";
 
 import {
@@ -28,7 +32,21 @@ import {
   deleteDeduction,
 } from "../controllers/loan_deduc";
 
+import {
+  addMonthlyDues,
+  getAllMonthlyDues,
+  getAllMonthlyDuesByMemberID,
+  removeMonthlyDues,
+  getTransactionByDateAndId,
+} from "../controllers/transactions";
+
 import { getAllWithdrawals } from "../controllers/partial_withdraw";
+
+import {
+  demoReport,
+  getReportByDateAndId,
+  getReportByDate,
+} from "../controllers/reports";
 
 const router = express.Router();
 
@@ -36,15 +54,23 @@ router.get("/things", things);
 
 router.get("/members", viewMembers);
 
+router.get("/members/:term", viewMembersByTerm);
+
 router.get("/archived-members", viewArchivedMembers);
 
 router.get("/members/:id", viewMemberById);
 
+router.get("/editmember/:id", viewMemberById);
+
 router.post("/add-member", addMember);
+
+router.post("/login", login);
 
 router.put("/update-member/:id", updateMember);
 
-router.put("/remove-member/:id", removeMember);
+router.put("/archive-member/:id", archiveMember);
+
+router.delete("/remove-member/:id", removeMember);
 
 //credit routes
 
@@ -78,5 +104,36 @@ router.delete("/delete-deduction/:id", deleteDeduction);
 // partial withdrawal routes
 
 router.get("/partial-withdraw", getAllWithdrawals);
+
+// transactions routes
+
+router.post("/add-monthlydues", addMonthlyDues);
+
+router.get("/get-monthlydues", getAllMonthlyDues);
+
+router.get("/get-monthlydues-id/:id", getAllMonthlyDuesByMemberID);
+
+router.delete("/remove-monthlydues/:id", removeMonthlyDues);
+
+router.get("/transactionbydate/:id", getTransactionByDateAndId);
+
+// page renders
+router.get("/somepage", (req, res) => {
+  res.render("pages/index");
+});
+
+router.get("/report/download/:id", (req, res) => {
+  let id = req.params.id;
+  const filePath = `${__dirname}/${id}.pdf`;
+  const fileName = "invoice 1234.pdf";
+
+  res.download(filePath, fileName);
+});
+
+router.get("/demo-report", demoReport);
+
+router.get("/reportbydate/:id", getReportByDateAndId);
+
+router.get("/monthlyduesreport", getReportByDate);
 
 export default router;

@@ -15,8 +15,18 @@ export const dbConfiguration: dbValidator = {
   db_host: "localhost",
   db_user: "root",
   db_password: "",
-  db_name: "nk_isl_credit_union",
-  db_port: 3307,
+  db_name: "nibs",
+  db_port: 3306,
   access_token: "accesstokenkey",
   refresh_token: "refreshtokenkey",
 };
+
+// export const dbConfiguration1: dbValidator = {
+//   db_host: "localhost",
+//   db_user: "mamasosda_nibs_demo",
+//   db_password: "O1]aq&FWqtvh",
+//   db_name: "mamasosda_nibs_demo",
+//   db_port: 3306,
+//   access_token: "accesstokenkey",
+//   refresh_token: "refreshtokenkey",
+// };

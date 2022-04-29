@@ -20,8 +20,8 @@ export const getAllCredits = async (
 ): Promise<void> => {
   const sql: string = `SELECT * FROM credits`;
   mysqlConnection.query(sql, (err, result): unknown => {
-    if (!err) return res.send(result);
-    if (err) return console.error(err);
+    if (!err) return res.json(result);
+    if (err) return res.json(err);
   });
 };
 
@@ -31,8 +31,8 @@ export const addCredit = async (req: Request, res: Response): Promise<void> => {
   VALUES
   (${credit.amount}, CURRENT_TIMESTAMP, "${credit.description}", "${credit.staff_id}")`;
   mysqlConnection.query(sql, (err, result): unknown => {
-    if (!err) return res.send("Credit records added to member successfully!");
-    if (err) return res.send("Could not add credit to member" + err.message);
+    if (!err) return res.json("Credit records added to member successfully!");
+    if (err) return res.json(err);
   });
 };
 
@@ -42,8 +42,8 @@ export const getCreditsByOneMember = async (
 ): Promise<void> => {
   const sql: string = `SELECT * FROM credits WHERE staff_id = ?`;
   mysqlConnection.query(sql, [req.params.id], (err, result): unknown => {
-    if (!err) return res.send(result);
-    if (err) return console.error(err);
+    if (!err) return res.json(result);
+    if (err) return res.json(err);
   });
 };
 
@@ -55,11 +55,8 @@ export const getAllCreditsByDate = async (
   const sql: string = `SELECT * FROM credits WHERE timestamp BETWEEN 
   ? AND ?`;
   mysqlConnection.query(sql, [date.from, date.to], (err, result): unknown => {
-    if (!err) return res.send(result);
-    if (err)
-      return res.send(
-        "Unable to retrieve all credit at the moment" + err.message
-      );
+    if (!err) return res.json(result);
+    if (err) return res.json(err);
   });
 };
 
@@ -74,11 +71,8 @@ export const getAllCreditsByDateAndId = async (
     sql,
     [date.staff_id, date.from, date.to],
     (err, result): unknown => {
-      if (!err) return res.send(result);
-      if (err)
-        return res.send(
-          "Unable to retrieve all credit at the moment" + err.message
-        );
+      if (!err) return res.json(result);
+      if (err) return res.json(err);
     }
   );
 };
@@ -89,7 +83,7 @@ export const deleteCredit = async (
 ): Promise<void> => {
   const sql: string = `DELETE FROM credits WHERE credit_id = ?`;
   mysqlConnection.query(sql, [req.params.id], (err, result): unknown => {
-    if (!err) return res.send("Credit was successfully deleted");
-    if (err) return console.log("Could not delete credit" + err.message);
+    if (!err) return res.json(result);
+    if (err) return res.json(err);
   });
 };

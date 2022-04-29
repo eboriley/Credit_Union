@@ -21,6 +21,9 @@ app.use(function (req, res, next) {
 app.set("view engine", "ejs");
 app.use("/", index_1.default);
 const port = 5000;
-app.listen(port, function () {
-    console.log("Server listening on http://localhost:" + port);
-});
+const runApp = () => {
+    app.listen(port, function () {
+        console.log("Server listening on http://localhost:" + port);
+    });
+};
+exports.default = runApp;

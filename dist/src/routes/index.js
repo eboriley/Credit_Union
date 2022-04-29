@@ -20,7 +20,6 @@ router.get("/archived-members", members_1.viewArchivedMembers);
 router.get("/members/:id", members_1.viewMemberById);
 router.get("/editmember/:id", members_1.viewMemberById);
 router.post("/add-member", members_1.addMember);
-router.post("/login", members_1.login);
 router.put("/update-member/:id", members_1.updateMember);
 router.put("/archive-member/:id", members_1.archiveMember);
 router.delete("/remove-member/:id", members_1.removeMember);
@@ -59,5 +58,4 @@ router.get("/report/download/:id", (req, res) => {
 });
 router.get("/demo-report", reports_1.demoReport);
 router.get("/reportbydate/:id", reports_1.getReportByDateAndId);
-router.get("/monthlyduesreport", reports_1.getReportByDate);
 exports.default = router;
