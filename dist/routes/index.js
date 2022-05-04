@@ -59,5 +59,6 @@ router.get("/report/download/:id", (req, res) => {
 });
 router.get("/demo-report", reports_1.demoReport);
 router.get("/reportbydate/:id", reports_1.getReportByDateAndId);
-router.get("/monthlyduesreport", reports_1.getReportByDate);
+router.get("/alltransac", reports_1.getAllTransactionsByDate);
+router.get("/singletransac", reports_1.getAllSingleTransactionByDate);
 exports.default = router;

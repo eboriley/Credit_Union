@@ -9,6 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.things = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.things = void 0;
+const things = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.send("some things we are here");
 });
+exports.things = things;

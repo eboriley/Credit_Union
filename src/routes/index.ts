@@ -45,7 +45,8 @@ import { getAllWithdrawals } from "../controllers/partial_withdraw";
 import {
   demoReport,
   getReportByDateAndId,
-  getReportByDate,
+  getAllTransactionsByDate,
+  getAllSingleTransactionByDate,
 } from "../controllers/reports";
 
 const router = express.Router();
@@ -134,6 +135,8 @@ router.get("/demo-report", demoReport);
 
 router.get("/reportbydate/:id", getReportByDateAndId);
 
-router.get("/monthlyduesreport", getReportByDate);
+router.get("/alltransac", getAllTransactionsByDate);
+
+router.get("/singletransac", getAllSingleTransactionByDate);
 
 export default router;

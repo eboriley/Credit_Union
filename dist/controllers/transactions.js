@@ -9,9 +9,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getTransactionByDateAndId = exports.removeMonthlyDues = exports.addMonthlyDues = exports.getAllMonthlyDuesByMemberID = exports.getAllMonthlyDues = exports.getAllTransactions = void 0;
 const mysqlConn_1 = require("../config/mysqlConn");
 const ReportGenerator = require("../ReportGenerator");
-exports.getAllTransactions = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getAllTransactions = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const sql = `SELECT * FROM transactions`;
     mysqlConn_1.mysqlConnection.query(sql, (err, result) => {
         if (!err)
@@ -20,7 +21,8 @@ exports.getAllTransactions = (req, res) => __awaiter(void 0, void 0, void 0, fun
             return res.json(err);
     });
 });
-exports.getAllMonthlyDues = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.getAllTransactions = getAllTransactions;
+const getAllMonthlyDues = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const sql = `SELECT * FROM transactions WHERE description = "monthly dues"`;
     mysqlConn_1.mysqlConnection.query(sql, (err, result) => {
         if (!err)
@@ -29,7 +31,8 @@ exports.getAllMonthlyDues = (req, res) => __awaiter(void 0, void 0, void 0, func
             return res.json(err);
     });
 });
-exports.getAllMonthlyDuesByMemberID = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.getAllMonthlyDues = getAllMonthlyDues;
+const getAllMonthlyDuesByMemberID = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const sql = `SELECT members.f_name, members.surname, transactions.transaction_id, CONCAT(transactions.month,', ',transactions.year) as period, transactions.month, transactions.year, CAST(transactions.date AS DATE)date, transactions.description, transactions.credit
   from transactions INNER JOIN members ON 
   transactions.staff_id = members.staff_id
@@ -41,7 +44,8 @@ exports.getAllMonthlyDuesByMemberID = (req, res) => __awaiter(void 0, void 0, vo
             return res.json(err);
     });
 });
-exports.addMonthlyDues = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.getAllMonthlyDuesByMemberID = getAllMonthlyDuesByMemberID;
+const addMonthlyDues = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let transaction = req.body;
     const sql = `INSERT INTO transactions (timestamp,date, description, credit, debit, staff_id, month, year)
   VALUES
@@ -53,7 +57,8 @@ exports.addMonthlyDues = (req, res) => __awaiter(void 0, void 0, void 0, functio
             return res.json(err);
     });
 });
-exports.removeMonthlyDues = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.addMonthlyDues = addMonthlyDues;
+const removeMonthlyDues = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const sql = `DELETE FROM transactions WHERE transaction_id = ?`;
     mysqlConn_1.mysqlConnection.query(sql, [req.params.id], (err, result) => {
         if (!err)
@@ -62,7 +67,8 @@ exports.removeMonthlyDues = (req, res) => __awaiter(void 0, void 0, void 0, func
             return res.json(err);
     });
 });
-exports.getTransactionByDateAndId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.removeMonthlyDues = removeMonthlyDues;
+const getTransactionByDateAndId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let dateInfo = req.body;
     const sql = `SELECT members.staff_id, members.f_name, members.surname, members.other_name, members.institution, members.phone_1,members.phone_2, members.photo, CONCAT(transactions.month,', ',transactions.year) as period, transactions.date, transactions.description,
   CASE transactions.credit 
@@ -142,3 +148,4 @@ exports.getTransactionByDateAndId = (req, res) => __awaiter(void 0, void 0, void
             return res.json(err);
     });
 });
+exports.getTransactionByDateAndId = getTransactionByDateAndId;

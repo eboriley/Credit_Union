@@ -9,8 +9,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getDeductionsByLoanId = exports.deleteDeduction = exports.getAllDeductionsByDateAndId = exports.getAllDeductionsByDate = exports.getAllDeductions = exports.editDeduction = exports.addDeduction = void 0;
 const mysqlConn_1 = require("../config/mysqlConn");
-exports.addDeduction = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const addDeduction = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const deduction = req.body;
     const sql = `INSERT INTO loan_deductions (amount, description, timestamp, loan_id)
     VALUES (?,?,CURRENT_TIMESTAMP,?)`;
@@ -21,7 +22,8 @@ exports.addDeduction = (req, res) => __awaiter(void 0, void 0, void 0, function*
             return res.send("Unable to credit loan to account" + err.message);
     });
 });
-exports.editDeduction = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.addDeduction = addDeduction;
+const editDeduction = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const deduction = req.body;
     const sql = `UPDATE loan_deductions SET amount = ?, description =?,
     timestamp = CURRENT_TIMESTAMP, loan_id = ? WHERE deduction_id = ?`;
@@ -32,7 +34,8 @@ exports.editDeduction = (req, res) => __awaiter(void 0, void 0, void 0, function
             return res.send("Unable to update loan credit record" + err.message);
     });
 });
-exports.getAllDeductions = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.editDeduction = editDeduction;
+const getAllDeductions = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const sql = `SELECT * FROM loan_deductions`;
     mysqlConn_1.mysqlConnection.query(sql, (err, result) => {
         if (!err)
@@ -41,7 +44,8 @@ exports.getAllDeductions = (req, res) => __awaiter(void 0, void 0, void 0, funct
             return res.send("Unable to retrieve all credit at the moment" + err.message);
     });
 });
-exports.getAllDeductionsByDate = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.getAllDeductions = getAllDeductions;
+const getAllDeductionsByDate = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const date = req.body;
     const sql = `SELECT * FROM loan_deductions WHERE timestamp BETWEEN 
   ? AND ?`;
@@ -52,7 +56,8 @@ exports.getAllDeductionsByDate = (req, res) => __awaiter(void 0, void 0, void 0,
             return res.send("Unable to retrieve all credit at the moment" + err.message);
     });
 });
-exports.getAllDeductionsByDateAndId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.getAllDeductionsByDate = getAllDeductionsByDate;
+const getAllDeductionsByDateAndId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const date = req.body;
     const sql = `SELECT * FROM loan_deductions WHERE loan_id = ? AND timestamp BETWEEN 
   ? AND ?`;
@@ -63,7 +68,8 @@ exports.getAllDeductionsByDateAndId = (req, res) => __awaiter(void 0, void 0, vo
             return res.send("Unable to retrieve all credit at the moment" + err.message);
     });
 });
-exports.deleteDeduction = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.getAllDeductionsByDateAndId = getAllDeductionsByDateAndId;
+const deleteDeduction = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const sql = `DELETE FROM loan_deductions WHERE deduction_id = ?`;
     mysqlConn_1.mysqlConnection.query(sql, [req.params.id], (err, result) => {
         if (!err)
@@ -72,7 +78,8 @@ exports.deleteDeduction = (req, res) => __awaiter(void 0, void 0, void 0, functi
             return res.send("Unable to delete record" + err.message);
     });
 });
-exports.getDeductionsByLoanId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.deleteDeduction = deleteDeduction;
+const getDeductionsByLoanId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const sql = `SELECT * FROM loan_deductions where loan_id = ?`;
     const deduction = req.body;
     mysqlConn_1.mysqlConnection.query(sql, [deduction.loan_id], (err, result) => {
@@ -82,3 +89,4 @@ exports.getDeductionsByLoanId = (req, res) => __awaiter(void 0, void 0, void 0, 
             return res.send("Unable to retrieve all credit at the moment" + err.message);
     });
 });
+exports.getDeductionsByLoanId = getDeductionsByLoanId;

@@ -9,10 +9,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getAllSingleTransactionByDate = exports.getAllTransactionsByDate = exports.demoReport = exports.getReportByDateAndId = void 0;
 const mysqlConn_1 = require("../config/mysqlConn");
 const PDFGenerator = require("pdfkit");
 const ReportGenerator = require("../ReportGenerator");
 const GenerateStatement = require("../GenerateStatement");
+const GenAllTranscReport = require("../GenAllTranscReport");
+const GenSingleTranscReport = require("../GenSingleTranscReport");
 const data = [
     {
         staff_id: "134577",
@@ -135,7 +138,7 @@ const data = [
         debit: 0,
     },
 ];
-exports.getReportByDateAndId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getReportByDateAndId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let dateInfo = req.query;
     const sql = `SELECT members.staff_id, members.f_name, members.surname, members.other_name, members.institution, members.phone_1,members.phone_2, members.photo, CONCAT(transactions.month,', ',transactions.year) as period, transactions.date, transactions.description,
 CASE transactions.credit 
@@ -153,86 +156,101 @@ transactions.staff_id = members.staff_id
 WHERE transactions.staff_id = ?`;
     mysqlConn_1.mysqlConnection.query(sql, [req.params.id], (err, result) => {
         if (!err) {
-            if (result.length > 0) {
-                const currentDate = (somedate) => {
-                    const date = new Date(somedate);
-                    return date;
-                };
-                const minDate = (somedate) => {
-                    const date = new Date(somedate);
-                    return date;
-                };
-                const maxDate = (somedate) => {
-                    const date = new Date(somedate);
-                    return date;
-                };
-                const returnedStatement = [];
-                for (let i = 0; i < result.length; i++) {
-                    if (currentDate(result[i].date) >= minDate(dateInfo.from) &&
-                        currentDate(result[i].date) <= maxDate(dateInfo.to)) {
-                        returnedStatement.push(result[i]);
+            try {
+                if (result.length > 0) {
+                    console.log(dateInfo);
+                    const currentDate = (somedate) => {
+                        const date = new Date(somedate);
+                        return date;
+                    };
+                    const minDate = (somedate) => {
+                        const date = new Date(somedate);
+                        return date;
+                    };
+                    const maxDate = (somedate) => {
+                        const date = new Date(somedate);
+                        return date;
+                    };
+                    const returnedStatement = [];
+                    for (let i = 0; i < result.length; i++) {
+                        const from = minDate(`${dateInfo.from}`);
+                        const to = maxDate(`${dateInfo.to}`);
+                        if (currentDate(result[i].date) >= from &&
+                            currentDate(result[i].date) <= to) {
+                            returnedStatement.push(result[i]);
+                        }
+                        // if (from.getMonth() === to.getMonth()) {
+                        //   return res.json("Records cannot be selected from the same month");
+                        // }
                     }
-                }
-                const ddd = returnedStatement[0];
-                //dateBeforeMindate is the first object in returnedStatement
-                //we need the first object in returnedStaement in order to get the date
-                //of the object before it in the main array, which is results array
-                const dateBeforeMinDate = result.findIndex((obj) => {
-                    return obj.date === ddd.date;
-                });
-                //this is how we get the object before the first object in the result array
-                if (result[dateBeforeMinDate - 1]) {
-                    returnedStatement.push(result[dateBeforeMinDate - 1]);
-                }
-                else {
-                    returnedStatement.push({ balance: 0 });
-                }
-                const dates = {
-                    from: dateInfo.from,
-                    to: dateInfo.to,
-                };
-                returnedStatement.push(dates);
-                let credit = 0;
-                let debit = 0;
-                for (let i = 0; i < returnedStatement.length - 2; i++) {
-                    if (returnedStatement[i].credit !== "-") {
-                        credit += parseFloat(returnedStatement[i].credit);
+                    const ddd = returnedStatement[0];
+                    //dateBeforeMindate is the first object in returnedStatement
+                    //we need the first object in returnedStaement in order to get the date
+                    //of the object before it in the main array, which is results array
+                    const dateBeforeMinDate = result.findIndex((obj) => {
+                        return obj.date === ddd.date;
+                    });
+                    //this is how we get the object before the first object in the result array
+                    if (result[dateBeforeMinDate - 1]) {
+                        returnedStatement.push(result[dateBeforeMinDate - 1]);
                     }
-                    if (returnedStatement[i].debit !== "-") {
-                        debit += parseFloat(returnedStatement[i].debit);
+                    else {
+                        returnedStatement.push({ balance: 0 });
                     }
+                    const dates = {
+                        from: dateInfo.from,
+                        to: dateInfo.to,
+                    };
+                    returnedStatement.push(dates);
+                    let credit = 0;
+                    let debit = 0;
+                    for (let i = 0; i < returnedStatement.length - 2; i++) {
+                        if (returnedStatement[i].credit !== "-") {
+                            credit += parseFloat(returnedStatement[i].credit);
+                        }
+                        if (returnedStatement[i].debit !== "-") {
+                            debit += parseFloat(returnedStatement[i].debit);
+                        }
+                    }
+                    const totals = {
+                        credit: credit,
+                        debit: debit,
+                    };
+                    returnedStatement.push(totals);
+                    const myDoc = new PDFGenerator({ bufferPages: true });
+                    const docName = returnedStatement[0].staff_id;
+                    let buffers = [];
+                    myDoc.on("data", buffers.push.bind(buffers));
+                    myDoc.on("end", () => {
+                        let pdfData = Buffer.concat(buffers);
+                        res
+                            .writeHead(200, {
+                            "Content-Length": Buffer.byteLength(pdfData),
+                            "Content-Type": "application/pdf",
+                            "Content-disposition": "attachment;filename=statement_" + docName + ".pdf",
+                        })
+                            .end(pdfData);
+                    });
+                    const gs = new GenerateStatement(returnedStatement, myDoc);
+                    gs.generate();
+                    myDoc.end();
                 }
-                const totals = {
-                    credit: credit,
-                    debit: debit,
-                };
-                returnedStatement.push(totals);
-                const myDoc = new PDFGenerator({ bufferPages: true });
-                const docName = returnedStatement[0].staff_id;
-                let buffers = [];
-                myDoc.on("data", buffers.push.bind(buffers));
-                myDoc.on("end", () => {
-                    let pdfData = Buffer.concat(buffers);
-                    res
-                        .writeHead(200, {
-                        "Content-Length": Buffer.byteLength(pdfData),
-                        "Content-Type": "application/pdf",
-                        "Content-disposition": "attachment;filename=statement_" + docName + ".pdf",
-                    })
-                        .end(pdfData);
-                });
-                const gs = new GenerateStatement(returnedStatement, myDoc);
-                gs.generate();
-                myDoc.end();
+                else
+                    res.json("no records");
             }
-            else
-                res.json("no records");
+            catch (error) {
+                if (error instanceof TypeError) {
+                    return res.json("No records found between selected dates");
+                }
+                console.error(error);
+            }
         }
         if (err)
             return res.json(err);
     });
 });
-exports.demoReport = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.getReportByDateAndId = getReportByDateAndId;
+const demoReport = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const myDoc = new PDFGenerator({ bufferPages: true });
     let buffers = [];
     myDoc.on("data", buffers.push.bind(buffers));
@@ -250,18 +268,105 @@ exports.demoReport = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     gs.generate();
     myDoc.end();
 });
-exports.getReportByDate = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.demoReport = demoReport;
+const getAllTransactionsByDate = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let dateInfo = req.query;
     const sql = `SELECT members.staff_id, CONCAT(members.f_name,' ',members.surname) as name, members.institution, members.phone_1,members.phone_2, members.photo, CONCAT(transactions.month,', ',transactions.year) as period, transactions.date, (transactions.credit + transactions.debit) as amount, transactions.description from transactions 
-INNER JOIN members 
-ON transactions.staff_id = members.staff_id 
-WHERE date BETWEEN ? AND ?`;
+  INNER JOIN members 
+  ON transactions.staff_id = members.staff_id 
+  WHERE date BETWEEN ? AND ?`;
     mysqlConn_1.mysqlConnection.query(sql, [dateInfo.from, dateInfo.to], (err, result) => {
         if (!err) {
-            return res.json(result);
+            try {
+                if (result.length > 0) {
+                    const report = result;
+                    const dates = {
+                        from: dateInfo.from,
+                        to: dateInfo.to,
+                    };
+                    report.push(dates);
+                    console.log(report);
+                    const myDoc = new PDFGenerator({ bufferPages: true });
+                    const docName = result[0].staff_id;
+                    let buffers = [];
+                    myDoc.on("data", buffers.push.bind(buffers));
+                    myDoc.on("end", () => {
+                        let pdfData = Buffer.concat(buffers);
+                        res
+                            .writeHead(200, {
+                            "Content-Length": Buffer.byteLength(pdfData),
+                            "Content-Type": "application/pdf",
+                            "Content-disposition": "attachment;filename=statement_" + docName + ".pdf",
+                        })
+                            .end(pdfData);
+                    });
+                    const gs = new GenAllTranscReport(result, myDoc);
+                    gs.generate();
+                    myDoc.end();
+                }
+                else
+                    res.json("no records");
+            }
+            catch (error) {
+                if (error instanceof TypeError) {
+                    return res.json("No records found between selected dates");
+                }
+                console.error(error);
+            }
         }
         if (err) {
             return res.json(err);
         }
     });
 });
+exports.getAllTransactionsByDate = getAllTransactionsByDate;
+const getAllSingleTransactionByDate = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let dateInfo = req.query;
+    const sql = `SELECT members.staff_id, CONCAT(members.f_name,' ',members.surname) as name, members.institution, members.phone_1,members.phone_2, members.photo, CONCAT(transactions.month,', ',transactions.year) as period, transactions.date, (transactions.credit + transactions.debit) as amount, transactions.description from transactions 
+  INNER JOIN members 
+  ON transactions.staff_id = members.staff_id 
+  WHERE date BETWEEN ? AND ? AND members.staff_id = ?`;
+    mysqlConn_1.mysqlConnection.query(sql, [dateInfo.from, dateInfo.to, dateInfo.staff_id], (err, result) => {
+        if (!err) {
+            try {
+                if (result.length > 0) {
+                    const report = result;
+                    const dates = {
+                        from: dateInfo.from,
+                        to: dateInfo.to,
+                    };
+                    report.push(dates);
+                    console.log(report);
+                    const myDoc = new PDFGenerator({ bufferPages: true });
+                    const docName = result[0].staff_id;
+                    let buffers = [];
+                    myDoc.on("data", buffers.push.bind(buffers));
+                    myDoc.on("end", () => {
+                        let pdfData = Buffer.concat(buffers);
+                        res
+                            .writeHead(200, {
+                            "Content-Length": Buffer.byteLength(pdfData),
+                            "Content-Type": "application/pdf",
+                            "Content-disposition": "attachment;filename=statement_" + docName + ".pdf",
+                        })
+                            .end(pdfData);
+                    });
+                    const gs = new GenSingleTranscReport(result, myDoc);
+                    gs.generate();
+                    myDoc.end();
+                }
+                else
+                    res.json("no records");
+            }
+            catch (error) {
+                if (error instanceof TypeError)
+                    return res.json("No records found between selected dates");
+                console.error(error);
+            }
+        }
+        if (err) {
+            return res.json(err);
+        }
+    });
+});
+exports.getAllSingleTransactionByDate = getAllSingleTransactionByDate;

@@ -1,4 +1,23 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8,17 +27,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.removeMember = exports.archiveMember = exports.updateMember = exports.viewArchivedMembers = exports.viewMemberById = exports.viewMembersByTerm = exports.viewMembers = exports.login = exports.addMember = void 0;
 const mysqlConn_1 = require("../config/mysqlConn");
 const bcrypt = __importStar(require("bcrypt"));
-exports.addMember = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const addMember = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let member = req.body;
     console.log(member);
     const duplicateSql = `SELECT * FROM members WHERE staff_id = ?`;
@@ -67,7 +80,8 @@ exports.addMember = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             return res.json(err);
     }));
 });
-exports.login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.addMember = addMember;
+const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let user = req.body;
     const sql = `SELECT * from members WHERE staff_id = ?`;
     mysqlConn_1.mysqlConnection.query(sql, [user.staff_id], (err, rows) => __awaiter(void 0, void 0, void 0, function* () {
@@ -89,7 +103,8 @@ exports.login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             return res.json(err);
     }));
 });
-exports.viewMembers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.login = login;
+const viewMembers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const sql = `SELECT * FROM members WHERE status = "active"`;
     mysqlConn_1.mysqlConnection.query(sql, (err, rows) => {
         if (!err)
@@ -98,7 +113,8 @@ exports.viewMembers = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             return res.json(err);
     });
 });
-exports.viewMembersByTerm = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.viewMembers = viewMembers;
+const viewMembersByTerm = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const sql = `SELECT * FROM members WHERE staff_id LIKE ? OR f_name LIKE ? OR surname LIKE ? OR gender LIKE ? AND status = "active"`;
     mysqlConn_1.mysqlConnection.query(sql, [
         "%" + req.params.term + "%",
@@ -112,7 +128,8 @@ exports.viewMembersByTerm = (req, res) => __awaiter(void 0, void 0, void 0, func
             return res.json(err);
     });
 });
-exports.viewMemberById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.viewMembersByTerm = viewMembersByTerm;
+const viewMemberById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const sql = `SELECT * FROM members WHERE staff_id = ? AND archived = "false"`;
     mysqlConn_1.mysqlConnection.query(sql, [req.params.id], (err, rows) => {
         if (!err)
@@ -121,7 +138,8 @@ exports.viewMemberById = (req, res) => __awaiter(void 0, void 0, void 0, functio
             return res.json(err);
     });
 });
-exports.viewArchivedMembers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.viewMemberById = viewMemberById;
+const viewArchivedMembers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const sql = `SELECT * FROM members WHERE archived = "true"`;
     mysqlConn_1.mysqlConnection.query(sql, (err, rows) => {
         if (!err)
@@ -130,7 +148,8 @@ exports.viewArchivedMembers = (req, res) => __awaiter(void 0, void 0, void 0, fu
             return res.json(err);
     });
 });
-exports.updateMember = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.viewArchivedMembers = viewArchivedMembers;
+const updateMember = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let member = req.body;
     const sql = `UPDATE members SET f_name = ?, surname = ?, other_name = ?,
     photo = ?, dob = ?, gender = ?, phone_1 = ?, phone_2 = ?, email = ?, next_of_kin = ?,
@@ -165,7 +184,8 @@ exports.updateMember = (req, res) => __awaiter(void 0, void 0, void 0, function*
             return res.json(err);
     });
 });
-exports.archiveMember = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.updateMember = updateMember;
+const archiveMember = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let member = req.body;
     const sql = `UPDATE members SET f_name = ?, surname = ?, other_name = ?,
     photo = ?, dob = ?, gender = ?, phone_1 = ?, phone_2 = ?, email = ?, next_of_kin = ?,
@@ -194,7 +214,8 @@ exports.archiveMember = (req, res) => __awaiter(void 0, void 0, void 0, function
             return res.json(err);
     });
 });
-exports.removeMember = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.archiveMember = archiveMember;
+const removeMember = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const sql = `DELETE FROM members WHERE staff_id = ?`;
     mysqlConn_1.mysqlConnection.query(sql, [req.params.id], (err, result) => {
         if (!err)
@@ -203,3 +224,4 @@ exports.removeMember = (req, res) => __awaiter(void 0, void 0, void 0, function*
             return res.json(err);
     });
 });
+exports.removeMember = removeMember;

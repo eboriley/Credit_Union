@@ -233,7 +233,7 @@ class ReportGenerator {
   }
 
   generateFooter(doc: any) {
-    doc.fontSize(12).text(`Payment due upon receipt. `, 50, 700, {
+    doc.fontSize(12).text(`gof & eboriley `, 50, 700, {
       align: "center",
     });
   }

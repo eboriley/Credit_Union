@@ -9,8 +9,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.deleteCredit = exports.getAllCreditsByDateAndId = exports.getAllCreditsByDate = exports.getCreditsByOneMember = exports.addCredit = exports.getAllCredits = void 0;
 const mysqlConn_1 = require("../config/mysqlConn");
-exports.getAllCredits = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getAllCredits = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const sql = `SELECT * FROM credits`;
     mysqlConn_1.mysqlConnection.query(sql, (err, result) => {
         if (!err)
@@ -19,7 +20,8 @@ exports.getAllCredits = (req, res) => __awaiter(void 0, void 0, void 0, function
             return res.json(err);
     });
 });
-exports.addCredit = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.getAllCredits = getAllCredits;
+const addCredit = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let credit = req.body;
     const sql = `INSERT INTO credits (amount, timestamp, description, staff_id)
   VALUES
@@ -31,7 +33,8 @@ exports.addCredit = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             return res.json(err);
     });
 });
-exports.getCreditsByOneMember = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.addCredit = addCredit;
+const getCreditsByOneMember = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const sql = `SELECT * FROM credits WHERE staff_id = ?`;
     mysqlConn_1.mysqlConnection.query(sql, [req.params.id], (err, result) => {
         if (!err)
@@ -40,7 +43,8 @@ exports.getCreditsByOneMember = (req, res) => __awaiter(void 0, void 0, void 0, 
             return res.json(err);
     });
 });
-exports.getAllCreditsByDate = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.getCreditsByOneMember = getCreditsByOneMember;
+const getAllCreditsByDate = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const date = req.body;
     const sql = `SELECT * FROM credits WHERE timestamp BETWEEN 
   ? AND ?`;
@@ -51,7 +55,8 @@ exports.getAllCreditsByDate = (req, res) => __awaiter(void 0, void 0, void 0, fu
             return res.json(err);
     });
 });
-exports.getAllCreditsByDateAndId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.getAllCreditsByDate = getAllCreditsByDate;
+const getAllCreditsByDateAndId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const date = req.body;
     const sql = `SELECT * FROM credits WHERE staff_id = ? AND timestamp BETWEEN 
   ? AND ?`;
@@ -62,7 +67,8 @@ exports.getAllCreditsByDateAndId = (req, res) => __awaiter(void 0, void 0, void 
             return res.json(err);
     });
 });
-exports.deleteCredit = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.getAllCreditsByDateAndId = getAllCreditsByDateAndId;
+const deleteCredit = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const sql = `DELETE FROM credits WHERE credit_id = ?`;
     mysqlConn_1.mysqlConnection.query(sql, [req.params.id], (err, result) => {
         if (!err)
@@ -71,3 +77,4 @@ exports.deleteCredit = (req, res) => __awaiter(void 0, void 0, void 0, function*
             return res.json(err);
     });
 });
+exports.deleteCredit = deleteCredit;

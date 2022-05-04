@@ -9,8 +9,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getAllWithdrawals = void 0;
 const mysqlConn_1 = require("../config/mysqlConn");
-exports.getAllWithdrawals = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getAllWithdrawals = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const sql = `SELECT * FROM partial_withdrawals`;
     mysqlConn_1.mysqlConnection.query(sql, (err, result) => {
         if (!err)
@@ -19,3 +20,4 @@ exports.getAllWithdrawals = (req, res) => __awaiter(void 0, void 0, void 0, func
             return res.json(err);
     });
 });
+exports.getAllWithdrawals = getAllWithdrawals;
