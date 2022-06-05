@@ -8,16 +8,18 @@ const app = express();
 
 app.use(express.json());
 app.use(bodyParser.json());
-app.use(cors());
+app.use(cors({
+  origin:'http://localhost:5000'
+}));
 app.use(express.urlencoded({ extended: true }));
-app.use(function (req: Request, res: Response, next: NextFunction) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
-  );
-  next();
-});
+// app.use(function (req: Request, res: Response, next: NextFunction) {
+//   res.header("Access-Control-Allow-Origin", "http://localhost:5000");
+//   res.header(
+//     "Access-Control-Allow-Headers",
+//     "Origin, X-Requested-With, Content-Type, Accept"
+//   );
+//   next();
+// });
 
 app.set("view engine", "ejs");
 

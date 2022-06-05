@@ -15,13 +15,15 @@ const reports_1 = require("../controllers/reports");
 const router = express_1.default.Router();
 router.get("/things", pages_1.things);
 router.get("/members", members_1.viewMembers);
+router.get("/allmembers", members_1.viewAllMembers);
 router.get("/members/:term", members_1.viewMembersByTerm);
 router.get("/archived-members", members_1.viewArchivedMembers);
-router.get("/members/:id", members_1.viewMemberById);
+router.get("/member/:id", members_1.viewMemberById);
 router.get("/editmember/:id", members_1.viewMemberById);
 router.post("/add-member", members_1.addMember);
 router.post("/login", members_1.login);
 router.put("/update-member/:id", members_1.updateMember);
+router.put("/update-member-pass/:id", members_1.updateMemberPassword);
 router.put("/archive-member/:id", members_1.archiveMember);
 router.delete("/remove-member/:id", members_1.removeMember);
 //credit routes
@@ -42,11 +44,15 @@ router.delete("/delete-deduction/:id", loan_deduc_1.deleteDeduction);
 // partial withdrawal routes
 router.get("/partial-withdraw", partial_withdraw_1.getAllWithdrawals);
 // transactions routes
+router.get("/transactions-all", transactions_1.getAllTransactions);
 router.post("/add-monthlydues", transactions_1.addMonthlyDues);
 router.get("/get-monthlydues", transactions_1.getAllMonthlyDues);
 router.get("/get-monthlydues-id/:id", transactions_1.getAllMonthlyDuesByMemberID);
 router.delete("/remove-monthlydues/:id", transactions_1.removeMonthlyDues);
-router.get("/transactionbydate/:id", transactions_1.getTransactionByDateAndId);
+router.get("/transactions/:id", transactions_1.getAllTransactionsById);
+router.get("/member-transactions/:id", transactions_1.getAllTransactionsByMemberId);
+router.get("/transactions-api/:term", transactions_1.getAllTransactionsQuery);
+router.get("/recent-transactions/:id", transactions_1.getRecentlyAddedTransactions);
 // page renders
 router.get("/somepage", (req, res) => {
     res.render("pages/index");

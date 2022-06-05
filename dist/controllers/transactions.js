@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTransactionByDateAndId = exports.removeMonthlyDues = exports.addMonthlyDues = exports.getAllMonthlyDuesByMemberID = exports.getAllMonthlyDues = exports.getAllTransactions = void 0;
+exports.removeMonthlyDues = exports.addMonthlyDues = exports.getRecentlyAddedTransactions = exports.getAllTransactionsQuery = exports.getAllMonthlyDuesByMemberID = exports.getAllMonthlyDues = exports.getAllTransactionsByMemberId = exports.getAllTransactionsById = exports.getAllTransactions = void 0;
 const mysqlConn_1 = require("../config/mysqlConn");
 const ReportGenerator = require("../ReportGenerator");
 const getAllTransactions = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -22,6 +22,26 @@ const getAllTransactions = (req, res) => __awaiter(void 0, void 0, void 0, funct
     });
 });
 exports.getAllTransactions = getAllTransactions;
+const getAllTransactionsById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const sql = `SELECT * FROM transactions where transaction_id = ?`;
+    mysqlConn_1.mysqlConnection.query(sql, [req.params.id], (err, result) => {
+        if (!err)
+            return res.json(result);
+        if (err)
+            return res.json(err);
+    });
+});
+exports.getAllTransactionsById = getAllTransactionsById;
+const getAllTransactionsByMemberId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const sql = `SELECT * FROM transactions where staff_id = ?`;
+    mysqlConn_1.mysqlConnection.query(sql, [req.params.id], (err, result) => {
+        if (!err)
+            return res.json(result);
+        if (err)
+            return res.json(err);
+    });
+});
+exports.getAllTransactionsByMemberId = getAllTransactionsByMemberId;
 const getAllMonthlyDues = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const sql = `SELECT * FROM transactions WHERE description = "monthly dues"`;
     mysqlConn_1.mysqlConnection.query(sql, (err, result) => {
@@ -45,6 +65,33 @@ const getAllMonthlyDuesByMemberID = (req, res) => __awaiter(void 0, void 0, void
     });
 });
 exports.getAllMonthlyDuesByMemberID = getAllMonthlyDuesByMemberID;
+const getAllTransactionsQuery = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const sql = `SELECT members.f_name, members.surname, transactions.* FROM transactions 
+  INNER JOIN members ON  transactions.staff_id = members.staff_id
+  WHERE description LIKE ? OR transactions.staff_id LIKE ?`;
+    mysqlConn_1.mysqlConnection.query(sql, [
+        "%" + req.params.term + "%",
+        "%" + req.params.term + "%",
+    ], (err, result) => {
+        if (!err)
+            return res.json(result);
+        if (err)
+            return res.json(err);
+    });
+});
+exports.getAllTransactionsQuery = getAllTransactionsQuery;
+const getRecentlyAddedTransactions = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const sql = `SELECT members.f_name, members.surname, transactions.* FROM transactions 
+  INNER JOIN members ON  transactions.staff_id = members.staff_id 
+  ORDER BY transactions.transaction_id DESC LIMIT ${req.query.limit}`;
+    mysqlConn_1.mysqlConnection.query(sql, (err, result) => {
+        if (!err)
+            return res.json(result);
+        if (err)
+            return res.json(err);
+    });
+});
+exports.getRecentlyAddedTransactions = getRecentlyAddedTransactions;
 const addMonthlyDues = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let transaction = req.body;
     const sql = `INSERT INTO transactions (timestamp,date, description, credit, debit, staff_id, month, year)
@@ -62,90 +109,9 @@ const removeMonthlyDues = (req, res) => __awaiter(void 0, void 0, void 0, functi
     const sql = `DELETE FROM transactions WHERE transaction_id = ?`;
     mysqlConn_1.mysqlConnection.query(sql, [req.params.id], (err, result) => {
         if (!err)
-            return res.json("Montly dues deleted successfully");
+            return res.json("Records was deleted successfully");
         if (err)
             return res.json(err);
     });
 });
 exports.removeMonthlyDues = removeMonthlyDues;
-const getTransactionByDateAndId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    let dateInfo = req.body;
-    const sql = `SELECT members.staff_id, members.f_name, members.surname, members.other_name, members.institution, members.phone_1,members.phone_2, members.photo, CONCAT(transactions.month,', ',transactions.year) as period, transactions.date, transactions.description,
-  CASE transactions.credit 
-  WHEN 0.00 THEN "-" 
-  ELSE transactions.credit 
-  END 
-  AS credit,
-  CASE transactions.debit
-  WHEN 0.00 THEN "-"
-  ELSE transactions.debit
-  END
-  AS debit, 
-  SUM(transactions.credit - transactions.debit) OVER (ORDER BY transactions.date) as balance from transactions INNER JOIN members ON 
-  transactions.staff_id = members.staff_id
-  WHERE transactions.staff_id = ?`;
-    mysqlConn_1.mysqlConnection.query(sql, [req.params.id], (err, result) => {
-        if (!err) {
-            console.log(dateInfo);
-            const currentDate = (somedate) => {
-                const date = new Date(somedate);
-                return date;
-            };
-            const minDate = (somedate) => {
-                const date = new Date(somedate);
-                return date;
-            };
-            const maxDate = (somedate) => {
-                const date = new Date(somedate);
-                return date;
-            };
-            const returnedStatement = [];
-            for (let i = 0; i < result.length; i++) {
-                if (currentDate(result[i].date) >= minDate(dateInfo.from) &&
-                    currentDate(result[i].date) <= maxDate(dateInfo.to)) {
-                    returnedStatement.push(result[i]);
-                }
-            }
-            const ddd = returnedStatement[0];
-            //dateBeforeMindate is the first object in returnedStatement
-            //we need the first object in returnedStaement in order to get the date
-            //of the object before it in the main array, which is results array
-            const dateBeforeMinDate = result.findIndex((obj) => {
-                return obj.date === ddd.date;
-            });
-            //this is how we get the object before the first object in the result array
-            if (result[dateBeforeMinDate - 1]) {
-                returnedStatement.push(result[dateBeforeMinDate - 1]);
-            }
-            else {
-                returnedStatement.push({ balance: 0 });
-            }
-            const dates = {
-                from: dateInfo.from,
-                to: dateInfo.to,
-            };
-            returnedStatement.push(dates);
-            let credit = 0;
-            let debit = 0;
-            for (let i = 0; i < returnedStatement.length - 2; i++) {
-                if (returnedStatement[i].credit !== "-") {
-                    credit += parseFloat(returnedStatement[i].credit);
-                }
-                if (returnedStatement[i].debit !== "-") {
-                    debit += parseFloat(returnedStatement[i].debit);
-                }
-            }
-            const totals = {
-                credit: credit,
-                debit: debit,
-            };
-            returnedStatement.push(totals);
-            const rg = new ReportGenerator(returnedStatement);
-            rg.generate();
-            res.json("successful");
-        }
-        if (err)
-            return res.json(err);
-    });
-});
-exports.getTransactionByDateAndId = getTransactionByDateAndId;

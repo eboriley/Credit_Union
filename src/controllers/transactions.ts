@@ -30,6 +30,28 @@ export const getAllTransactions = async (
   });
 };
 
+export const getAllTransactionsById = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const sql: string = `SELECT * FROM transactions where transaction_id = ?`;
+  mysqlConnection.query(sql,[req.params.id], (err, result): unknown => {
+    if (!err) return res.json(result);
+    if (err) return res.json(err);
+  });
+};
+
+export const getAllTransactionsByMemberId = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const sql: string = `SELECT * FROM transactions where staff_id = ?`;
+  mysqlConnection.query(sql,[req.params.id], (err, result): unknown => {
+    if (!err) return res.json(result);
+    if (err) return res.json(err);
+  });
+};
+
 export const getAllMonthlyDues = async (
   req: Request,
   res: Response
@@ -55,6 +77,36 @@ export const getAllMonthlyDuesByMemberID = async (
   });
 };
 
+
+export const getAllTransactionsQuery = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const sql: string = `SELECT members.f_name, members.surname, transactions.* FROM transactions 
+  INNER JOIN members ON  transactions.staff_id = members.staff_id
+  WHERE description LIKE ? OR transactions.staff_id LIKE ?`;
+  mysqlConnection.query(sql,   [
+    "%" + req.params.term + "%",
+    "%" + req.params.term + "%",
+  ], (err, result): unknown => {
+    if (!err) return res.json(result);
+    if (err) return res.json(err);
+  });
+};
+
+export const getRecentlyAddedTransactions = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const sql: string = `SELECT members.f_name, members.surname, transactions.* FROM transactions 
+  INNER JOIN members ON  transactions.staff_id = members.staff_id 
+  ORDER BY transactions.transaction_id DESC LIMIT ${req.query.limit}`;
+  mysqlConnection.query(sql, (err, result): unknown => {
+    if (!err) return res.json(result);
+    if (err) return res.json(err);
+  });
+};
+
 export const addMonthlyDues = async (
   req: Request,
   res: Response
@@ -75,99 +127,9 @@ export const removeMonthlyDues = async (
 ): Promise<void> => {
   const sql: string = `DELETE FROM transactions WHERE transaction_id = ?`;
   mysqlConnection.query(sql, [req.params.id], (err, result): unknown => {
-    if (!err) return res.json("Montly dues deleted successfully");
+    if (!err) return res.json("Records was deleted successfully");
     if (err) return res.json(err);
   });
 };
 
-export const getTransactionByDateAndId = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  let dateInfo: any = req.body;
-  const sql: string = `SELECT members.staff_id, members.f_name, members.surname, members.other_name, members.institution, members.phone_1,members.phone_2, members.photo, CONCAT(transactions.month,', ',transactions.year) as period, transactions.date, transactions.description,
-  CASE transactions.credit 
-  WHEN 0.00 THEN "-" 
-  ELSE transactions.credit 
-  END 
-  AS credit,
-  CASE transactions.debit
-  WHEN 0.00 THEN "-"
-  ELSE transactions.debit
-  END
-  AS debit, 
-  SUM(transactions.credit - transactions.debit) OVER (ORDER BY transactions.date) as balance from transactions INNER JOIN members ON 
-  transactions.staff_id = members.staff_id
-  WHERE transactions.staff_id = ?`;
-  mysqlConnection.query(sql, [req.params.id], (err, result): unknown => {
-    if (!err) {
-      console.log(dateInfo);
-      const currentDate = (somedate: any) => {
-        const date = new Date(somedate);
-        return date;
-      };
-      const minDate = (somedate: any) => {
-        const date = new Date(somedate);
-        return date;
-      };
-      const maxDate = (somedate: any) => {
-        const date = new Date(somedate);
-        return date;
-      };
-      const returnedStatement = [];
 
-      for (let i = 0; i < result.length; i++) {
-        if (
-          currentDate(result[i].date) >= minDate(dateInfo.from) &&
-          currentDate(result[i].date) <= maxDate(dateInfo.to)
-        ) {
-          returnedStatement.push(result[i]);
-        }
-      }
-
-      const ddd = returnedStatement[0];
-      //dateBeforeMindate is the first object in returnedStatement
-      //we need the first object in returnedStaement in order to get the date
-      //of the object before it in the main array, which is results array
-
-      const dateBeforeMinDate = result.findIndex((obj: any) => {
-        return obj.date === ddd.date;
-      });
-
-      //this is how we get the object before the first object in the result array
-      if (result[dateBeforeMinDate - 1]) {
-        returnedStatement.push(result[dateBeforeMinDate - 1]);
-      } else {
-        returnedStatement.push({ balance: 0 });
-      }
-
-      const dates = {
-        from: dateInfo.from,
-        to: dateInfo.to,
-      };
-
-      returnedStatement.push(dates);
-      let credit: number = 0;
-      let debit: number = 0;
-      for (let i = 0; i < returnedStatement.length - 2; i++) {
-        if (returnedStatement[i].credit !== "-") {
-          credit += parseFloat(returnedStatement[i].credit);
-        }
-        if (returnedStatement[i].debit !== "-") {
-          debit += parseFloat(returnedStatement[i].debit);
-        }
-      }
-
-      const totals = {
-        credit: credit,
-        debit: debit,
-      };
-
-      returnedStatement.push(totals);
-      const rg = new ReportGenerator(returnedStatement);
-      rg.generate();
-      res.json("successful");
-    }
-    if (err) return res.json(err);
-  });
-};

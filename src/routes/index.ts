@@ -5,7 +5,9 @@ import {
   addMember,
   viewMemberById,
   viewMembers,
+  viewAllMembers,
   updateMember,
+  updateMemberPassword,
   removeMember,
   archiveMember,
   viewArchivedMembers,
@@ -37,7 +39,11 @@ import {
   getAllMonthlyDues,
   getAllMonthlyDuesByMemberID,
   removeMonthlyDues,
-  getTransactionByDateAndId,
+  getAllTransactionsById,
+  getAllTransactionsQuery,
+  getAllTransactions,
+  getAllTransactionsByMemberId,
+  getRecentlyAddedTransactions
 } from "../controllers/transactions";
 
 import { getAllWithdrawals } from "../controllers/partial_withdraw";
@@ -55,11 +61,13 @@ router.get("/things", things);
 
 router.get("/members", viewMembers);
 
+router.get("/allmembers", viewAllMembers);
+
 router.get("/members/:term", viewMembersByTerm);
 
 router.get("/archived-members", viewArchivedMembers);
 
-router.get("/members/:id", viewMemberById);
+router.get("/member/:id", viewMemberById);
 
 router.get("/editmember/:id", viewMemberById);
 
@@ -68,6 +76,8 @@ router.post("/add-member", addMember);
 router.post("/login", login);
 
 router.put("/update-member/:id", updateMember);
+
+router.put("/update-member-pass/:id", updateMemberPassword)
 
 router.put("/archive-member/:id", archiveMember);
 
@@ -107,6 +117,7 @@ router.delete("/delete-deduction/:id", deleteDeduction);
 router.get("/partial-withdraw", getAllWithdrawals);
 
 // transactions routes
+router.get("/transactions-all",getAllTransactions)
 
 router.post("/add-monthlydues", addMonthlyDues);
 
@@ -116,7 +127,13 @@ router.get("/get-monthlydues-id/:id", getAllMonthlyDuesByMemberID);
 
 router.delete("/remove-monthlydues/:id", removeMonthlyDues);
 
-router.get("/transactionbydate/:id", getTransactionByDateAndId);
+router.get("/transactions/:id", getAllTransactionsById);
+
+router.get("/member-transactions/:id", getAllTransactionsByMemberId)
+
+router.get("/transactions-api/:term", getAllTransactionsQuery)
+
+router.get("/recent-transactions/:id",getRecentlyAddedTransactions)
 
 // page renders
 router.get("/somepage", (req, res) => {
@@ -140,3 +157,5 @@ router.get("/alltransac", getAllTransactionsByDate);
 router.get("/singletransac", getAllSingleTransactionByDate);
 
 export default router;
+
+

@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -28,57 +32,62 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.removeMember = exports.archiveMember = exports.updateMember = exports.viewArchivedMembers = exports.viewMemberById = exports.viewMembersByTerm = exports.viewMembers = exports.login = exports.addMember = void 0;
+exports.removeMember = exports.archiveMember = exports.updateMemberPassword = exports.updateMember = exports.viewArchivedMembers = exports.viewMemberById = exports.viewMembersByTerm = exports.viewAllMembers = exports.viewMembers = exports.login = exports.addMember = void 0;
 const mysqlConn_1 = require("../config/mysqlConn");
 const bcrypt = __importStar(require("bcrypt"));
 const addMember = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let member = req.body;
     console.log(member);
     const duplicateSql = `SELECT * FROM members WHERE staff_id = ?`;
-    mysqlConn_1.mysqlConnection.query(duplicateSql, [member.staff_id], (err, result) => __awaiter(void 0, void 0, void 0, function* () {
-        if (!err) {
-            if (result.length > 0) {
-                res.json({ error: "Member already exists" });
+    try {
+        mysqlConn_1.mysqlConnection.query(duplicateSql, [member.staff_id], (err, result) => __awaiter(void 0, void 0, void 0, function* () {
+            if (!err) {
+                if (result.length > 0) {
+                    res.json("Member already exists");
+                }
+                else {
+                    const hashedPassword = yield bcrypt.hash(member.password, 10);
+                    const sql = `INSERT INTO members (staff_id, f_name, surname, other_name, photo, dob, gender,
+            phone_1, phone_2, email, next_of_kin, next_of_kin_phone, relationship, archived, status, institution,password,type,beneficiary_1,beneficiary_2,beneficiary_3)
+          VALUES 
+          (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+                    mysqlConn_1.mysqlConnection.query(sql, [
+                        member.staff_id,
+                        member.f_name,
+                        member.surname,
+                        member.other_name,
+                        member.photo,
+                        member.dob,
+                        member.gender,
+                        member.phone_1,
+                        member.phone_2,
+                        member.email,
+                        member.next_of_kin,
+                        member.next_of_kin_phone,
+                        member.relationship,
+                        member.archived,
+                        member.status,
+                        member.institution,
+                        hashedPassword,
+                        member.type,
+                        member.beneficiary_1,
+                        member.beneficiary_2,
+                        member.beneficiary_3,
+                    ], (err, result) => {
+                        if (!err)
+                            res.json("Member information added successfully");
+                        if (err)
+                            res.json("Could not add member information" + err.message);
+                    });
+                }
             }
-            else {
-                const hashedPassword = yield bcrypt.hash(member.password, 10);
-                const sql = `INSERT INTO members (staff_id, f_name, surname, other_name, photo, dob, gender,
-          phone_1, phone_2, email, next_of_kin, next_of_kin_phone, relationship, archived, status, institution,password,type,beneficiary_1,beneficiary_2,beneficiary_3)
-        VALUES 
-        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?)`;
-                mysqlConn_1.mysqlConnection.query(sql, [
-                    member.staff_id,
-                    member.f_name,
-                    member.surname,
-                    member.other_name,
-                    member.photo,
-                    member.dob,
-                    member.gender,
-                    member.phone_1,
-                    member.phone_2,
-                    member.email,
-                    member.next_of_kin,
-                    member.next_of_kin_phone,
-                    member.relationship,
-                    member.archived,
-                    member.status,
-                    member.institution,
-                    hashedPassword,
-                    member.type,
-                    member.beneficiary_1,
-                    member.beneficiary_2,
-                    member.beneficiary_3,
-                ], (err, result) => {
-                    if (!err)
-                        res.json("Member information added successfully");
-                    if (err)
-                        res.json("Could not add member information" + err.message);
-                });
-            }
-        }
-        if (err)
-            return res.json(err);
-    }));
+            if (err)
+                return res.json(err);
+        }));
+    }
+    catch (error) {
+        return;
+    }
 });
 exports.addMember = addMember;
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -105,7 +114,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.login = login;
 const viewMembers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const sql = `SELECT * FROM members WHERE status = "active"`;
+    const sql = `SELECT * FROM members`;
     mysqlConn_1.mysqlConnection.query(sql, (err, rows) => {
         if (!err)
             return res.json(rows);
@@ -114,9 +123,23 @@ const viewMembers = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     });
 });
 exports.viewMembers = viewMembers;
+const viewAllMembers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const sql = `SELECT * FROM members WHERE status = "active" ORDER BY staff_id LIMIT ${req.query.limit} OFFSET ${req.query.offset}`;
+    mysqlConn_1.mysqlConnection.query(sql, (err, rows) => {
+        if (!err)
+            return res.json(rows);
+        if (err)
+            return res.json(err);
+    });
+});
+exports.viewAllMembers = viewAllMembers;
 const viewMembersByTerm = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const sql = `SELECT * FROM members WHERE staff_id LIKE ? OR f_name LIKE ? OR surname LIKE ? OR gender LIKE ? AND status = "active"`;
+    const sql = `SELECT * FROM members WHERE staff_id LIKE ? OR f_name LIKE ? OR surname LIKE ? OR other_name LIKE ?
+  OR gender LIKE ? OR institution LIKE ? AND status = "active" ORDER BY staff_id
+  LIMIT ${req.query.limit} OFFSET ${req.query.offset}`;
     mysqlConn_1.mysqlConnection.query(sql, [
+        "%" + req.params.term + "%",
+        "%" + req.params.term + "%",
         "%" + req.params.term + "%",
         "%" + req.params.term + "%",
         "%" + req.params.term + "%",
@@ -179,12 +202,49 @@ const updateMember = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         req.params.id,
     ], (err, result) => {
         if (!err)
-            return res.json(result);
+            return res.json("success");
         if (err)
-            return res.json(err);
+            return res.json("error");
     });
 });
 exports.updateMember = updateMember;
+const updateMemberPassword = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let member = req.body;
+    const hashedPassword = yield bcrypt.hash(member.password, 10);
+    const sql = `UPDATE members SET f_name = ?, surname = ?, other_name = ?,
+    photo = ?, dob = ?, gender = ?, phone_1 = ?, phone_2 = ?, email = ?, next_of_kin = ?,
+    next_of_kin_phone = ?, relationship = ?, archived = ?, status = ?, institution = ?, password = ?,
+    type = ?, beneficiary_1 = ?, beneficiary_2 = ?, beneficiary_3 = ? WHERE staff_id = ?`;
+    mysqlConn_1.mysqlConnection.query(sql, [
+        member.f_name,
+        member.surname,
+        member.other_name,
+        member.photo,
+        member.dob,
+        member.gender,
+        member.phone_1,
+        member.phone_2,
+        member.email,
+        member.next_of_kin,
+        member.next_of_kin_phone,
+        member.relationship,
+        member.archived,
+        member.status,
+        member.institution,
+        hashedPassword,
+        member.type,
+        member.beneficiary_1,
+        member.beneficiary_2,
+        member.beneficiary_3,
+        req.params.id,
+    ], (err, result) => {
+        if (!err)
+            return res.json("success");
+        if (err)
+            return res.json("error");
+    });
+});
+exports.updateMemberPassword = updateMemberPassword;
 const archiveMember = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let member = req.body;
     const sql = `UPDATE members SET f_name = ?, surname = ?, other_name = ?,

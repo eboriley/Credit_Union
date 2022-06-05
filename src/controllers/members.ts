@@ -35,55 +35,59 @@ export const addMember = async (req: Request, res: Response): Promise<void> => {
   let member: Member = req.body;
   console.log(member);
   const duplicateSql: string = `SELECT * FROM members WHERE staff_id = ?`;
-  mysqlConnection.query(
-    duplicateSql,
-    [member.staff_id],
-    async (err, result) => {
-      if (!err) {
-        if (result.length > 0) {
-          res.json({ error: "Member already exists" });
-        } else {
-          const hashedPassword = await bcrypt.hash(member.password, 10);
-          const sql: string = `INSERT INTO members (staff_id, f_name, surname, other_name, photo, dob, gender,
-          phone_1, phone_2, email, next_of_kin, next_of_kin_phone, relationship, archived, status, institution,password,type,beneficiary_1,beneficiary_2,beneficiary_3)
-        VALUES 
-        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?)`;
-          mysqlConnection.query(
-            sql,
-            [
-              member.staff_id,
-              member.f_name,
-              member.surname,
-              member.other_name,
-              member.photo,
-              member.dob,
-              member.gender,
-              member.phone_1,
-              member.phone_2,
-              member.email,
-              member.next_of_kin,
-              member.next_of_kin_phone,
-              member.relationship,
-              member.archived,
-              member.status,
-              member.institution,
-              hashedPassword,
-              member.type,
-              member.beneficiary_1,
-              member.beneficiary_2,
-              member.beneficiary_3,
-            ],
-            (err, result) => {
-              if (!err) res.json("Member information added successfully");
-              if (err)
-                res.json("Could not add member information" + err.message);
-            }
-          );
+  try {
+    mysqlConnection.query(
+      duplicateSql,
+      [member.staff_id],
+      async (err, result) => {
+        if (!err) {
+          if (result.length > 0) {
+            res.json("Member already exists");
+          } else {
+            const hashedPassword = await bcrypt.hash(member.password, 10);
+            const sql: string = `INSERT INTO members (staff_id, f_name, surname, other_name, photo, dob, gender,
+            phone_1, phone_2, email, next_of_kin, next_of_kin_phone, relationship, archived, status, institution,password,type,beneficiary_1,beneficiary_2,beneficiary_3)
+          VALUES 
+          (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+            mysqlConnection.query(
+              sql,
+              [
+                member.staff_id,
+                member.f_name,
+                member.surname,
+                member.other_name,
+                member.photo,
+                member.dob,
+                member.gender,
+                member.phone_1,
+                member.phone_2,
+                member.email,
+                member.next_of_kin,
+                member.next_of_kin_phone,
+                member.relationship,
+                member.archived,
+                member.status,
+                member.institution,
+                hashedPassword,
+                member.type,
+                member.beneficiary_1,
+                member.beneficiary_2,
+                member.beneficiary_3,
+              ],
+              (err, result) => {
+                if (!err) res.json("Member information added successfully");
+                if (err)
+                  res.json("Could not add member information" + err.message);
+              }
+            );
+          }
         }
+        if (err) return res.json(err);
       }
-      if (err) return res.json(err);
-    }
-  );
+    );
+  } catch (error) {
+    return
+  }
 };
 
 export const login = async (req: Request, res: Response): Promise<void> => {
@@ -111,20 +115,36 @@ export const viewMembers = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const sql: string = `SELECT * FROM members WHERE status = "active"`;
+  const sql: string = `SELECT * FROM members`;
   mysqlConnection.query(sql, (err, rows): unknown => {
     if (!err) return res.json(rows);
     if (err) return res.json(err);
   });
 };
+export const viewAllMembers = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const sql: string = `SELECT * FROM members WHERE status = "active" ORDER BY staff_id LIMIT ${req.query.limit} OFFSET ${req.query.offset}`;
+  mysqlConnection.query(sql, (err, rows): unknown => {
+    if (!err) return res.json(rows);
+    if (err) return res.json(err);
+  });
+};
+
+
 export const viewMembersByTerm = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const sql: string = `SELECT * FROM members WHERE staff_id LIKE ? OR f_name LIKE ? OR surname LIKE ? OR gender LIKE ? AND status = "active"`;
+  const sql: string = `SELECT * FROM members WHERE staff_id LIKE ? OR f_name LIKE ? OR surname LIKE ? OR other_name LIKE ?
+  OR gender LIKE ? OR institution LIKE ? AND status = "active" ORDER BY staff_id
+  LIMIT ${req.query.limit} OFFSET ${req.query.offset}`;
   mysqlConnection.query(
     sql,
     [
+      "%" + req.params.term + "%",
+      "%" + req.params.term + "%",
       "%" + req.params.term + "%",
       "%" + req.params.term + "%",
       "%" + req.params.term + "%",
@@ -194,8 +214,49 @@ export const updateMember = async (
       req.params.id,
     ],
     (err, result): unknown => {
-      if (!err) return res.json(result);
-      if (err) return res.json(err);
+      if (!err) return res.json("success");
+      if (err) return res.json("error");
+    }
+  );
+};
+export const updateMemberPassword = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  let member: Member = req.body;
+  const hashedPassword = await bcrypt.hash(member.password, 10);
+  const sql: string = `UPDATE members SET f_name = ?, surname = ?, other_name = ?,
+    photo = ?, dob = ?, gender = ?, phone_1 = ?, phone_2 = ?, email = ?, next_of_kin = ?,
+    next_of_kin_phone = ?, relationship = ?, archived = ?, status = ?, institution = ?, password = ?,
+    type = ?, beneficiary_1 = ?, beneficiary_2 = ?, beneficiary_3 = ? WHERE staff_id = ?`;
+  mysqlConnection.query(
+    sql,
+    [
+      member.f_name,
+      member.surname,
+      member.other_name,
+      member.photo,
+      member.dob,
+      member.gender,
+      member.phone_1,
+      member.phone_2,
+      member.email,
+      member.next_of_kin,
+      member.next_of_kin_phone,
+      member.relationship,
+      member.archived,
+      member.status,
+      member.institution,
+      hashedPassword,
+      member.type,
+      member.beneficiary_1,
+      member.beneficiary_2,
+      member.beneficiary_3,
+      req.params.id,
+    ],
+    (err, result): unknown => {
+      if (!err) return res.json("success");
+      if (err) return res.json("error");
     }
   );
 };
